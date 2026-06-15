@@ -115,7 +115,7 @@ echo "test_img.png" > file_list.txt
 
 # 2. Run the executable (it's in the parent dir, so ../)
 echo "Running overlay_generator..."
-../poseidon_utils/bin/overlay_generator image_folder segs_folder overlay_dest file_list.txt 0.5
+../overlay_generator image_folder segs_folder overlay_dest file_list.txt 0.5
 
 # 3. Check for the expected output file
 OVERLAY_OUTPUT="overlay_dest/segmap_overlay_test_img.png"
@@ -135,7 +135,7 @@ echo "test_img_predseg.png" > label_file_list.txt
 
 # 2. Run the executable
 echo "Running pred_label_generator..."
-../poseidon_utils/bin/pred_label_generator segs_folder label_file_list.txt labels_dest
+../pred_label_generator segs_folder label_file_list.txt labels_dest
 
 # 3. Check for the expected output file
 LABEL_OUTPUT="labels_dest/test_img_predseg_labels.png"

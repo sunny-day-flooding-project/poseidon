@@ -34,3 +34,5 @@ dependencies:
   - cucim
   - svgpath2mpl
   - dask
+  - pytz
+  
