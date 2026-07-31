@@ -30,6 +30,7 @@ WORKDIR /opt/poseidon
 # This allows Docker to cache the expensive conda solve layers.
 # ------------------------------------------------------------
 # ------------------------------------------------------------
+RUN conda config --set solver libmamba
 
 # Gym environment
 COPY poseidon_deploy/segmentation/segmentation_gym/install/gym.yml /tmp/gym.yml
