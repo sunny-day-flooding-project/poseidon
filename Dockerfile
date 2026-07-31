@@ -24,20 +24,23 @@ ENV HOME=/opt
 RUN mkdir -p /opt/poseidon
 WORKDIR /opt/poseidon
 
-# ------------------------------------------------------------
+
 # ------------------------------------------------------------
 # *** IMPORTANT: Install conda environments BEFORE copying project ***
 # This allows Docker to cache the expensive conda solve layers.
 # ------------------------------------------------------------
-# ------------------------------------------------------------
+# Install Mamba into the base environment for fast, low-memory solves
+RUN conda install -n base -c conda-forge mamba -y && conda clean -afy
 
 # Gym environment
 COPY poseidon_deploy/segmentation/segmentation_gym/install/gym.yml /tmp/gym.yml
-RUN conda env create -n gym -f /tmp/gym.yml && conda clean -afy
+RUN mamba env create -n gym -f /tmp/gym.yml && conda clean -afy
 
 # Poseidon environment
 COPY poseidon_deploy/poseidon-env.yml /tmp/poseidon-env.yml
-RUN conda env create -n poseidon -f /tmp/poseidon-env.yml && conda clean -afy
+RUN mamba env create -n poseidon -f /tmp/poseidon-env.yml && conda clean -afy
+
+
 
 # make it so the c++ programs can find the libraries
 ENV LD_LIBRARY_PATH=/opt/conda/envs/poseidon/lib:$LD_LIBRARY_PATH
