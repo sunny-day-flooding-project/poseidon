@@ -9,8 +9,14 @@ echo "------------------------------------------------"
 echo "Job Started: $(date)"
 echo "------------------------------------------------"
 
-# This does conda initialization
-source "$HOME/miniconda3/etc/profile.d/conda.sh"
+if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+    source "$HOME/miniconda3/etc/profile.d/conda.sh"
+elif [ -f "/opt/conda/etc/profile.d/conda.sh" ]; then
+    source "/opt/conda/etc/profile.d/conda.sh"
+else
+    echo "conda.sh not found"
+    exit 1
+fi
 
 REPO_ROOT=$HOME/poseidon
 ENV_FILE="$REPO_ROOT/poseidon_deploy/hpc_paths.env"
@@ -28,10 +34,11 @@ conda activate gym
 export TRANSFORMERS_OFFLINE=1
 export TRANSFORMERS_CACHE="$REPO_ROOT/poseidon_deploy/segmentation/segmentation_gym/hf_cache_portable"
 
-# WSL specific export to add to load library path
-# WSL specific export to add to load library path
-# WSL specific export to add to load library path
-export LD_LIBRARY_PATH=/usr/lib/wsl/lib:$LD_LIBRARY_PATH
+# Add only if the directory exists (WSL)
+if [ -d "/usr/lib/wsl/lib" ]; then
+	# WSL specific export to add to load library path
+    export LD_LIBRARY_PATH="/usr/lib/wsl/lib:$LD_LIBRARY_PATH"
+fi
 
 # --- CONFIGURATION ---
 CONTAINER_PATH="${REPO_ROOT}/poseidon_deploy/segmentation/container/seg_gym.sif"

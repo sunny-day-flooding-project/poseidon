@@ -1,0 +1,2 @@
+In order to attach the debugger from vscode to the docker container, when the image is created map port 5678 to 5678 either with 'docker run -p 5678:5678 ...'
+or as an option in docker desktop.

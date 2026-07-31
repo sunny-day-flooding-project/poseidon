@@ -15,7 +15,14 @@ echo "------------------------------------------------"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 # This does conda initialization
-source "$HOME/miniconda3/etc/profile.d/conda.sh"
+if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+    source "$HOME/miniconda3/etc/profile.d/conda.sh"
+elif [ -f "/opt/conda/etc/profile.d/conda.sh" ]; then
+    source "/opt/conda/etc/profile.d/conda.sh"
+else
+    echo "conda.sh not found"
+    exit 1
+fi
 
 REPO_ROOT=$HOME/poseidon
 ENV_FILE="$REPO_ROOT/poseidon_deploy/hpc_paths.env"
