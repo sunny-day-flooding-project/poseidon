@@ -1,75 +1,55 @@
-# ------------------------------------------------------------
-# Base image: Miniconda for development
-# ------------------------------------------------------------
+# ============================================================
+# STAGE 1: Builder
+# In order to reduce memory load on OpenShift, heavy dependency
+# resolution & installation happens here in its own build stage
+# ============================================================
+FROM continuumio/miniconda3:latest AS builder
+
+# Copy environment definitions
+COPY poseidon_deploy/segmentation/segmentation_gym/install/gym.yml /tmp/gym.yml
+COPY poseidon_deploy/poseidon-env.yml /tmp/poseidon-env.yml
+
+# Build both conda environments and clean up temporary caches
+RUN conda env create -n gym -f /tmp/gym.yml && \
+    conda env create -n poseidon -f /tmp/poseidon-env.yml && \
+    conda clean -afy
+
+
+# ============================================================
+# STAGE 2: Final Runtime Image
+# Lean stage deployed on OpenShift
+# ============================================================
 FROM continuumio/miniconda3:latest
 
-# ------------------------------------------------------------
-# Create a non-root user for OpenShift compatibility
-# ------------------------------------------------------------
+# Create non-root user for OpenShift compatibility
 RUN useradd -m -u 1001 appuser
 
-# ------------------------------------------------------------
-# Install some necessary/useful programs
-# ------------------------------------------------------------
-RUN apt-get update && apt-get install -y curl vim
+# Install system dependencies
+RUN apt-get update && apt-get install -y curl vim && rm -rf /var/lib/apt/lists/*
 
-# ------------------------------------------------------------
-# Set HOME to /opt so scripts using $HOME/poseidon/... work
-# ------------------------------------------------------------
+# Set HOME directory
 ENV HOME=/opt
 
-# ------------------------------------------------------------
 # Create project directory
-# ------------------------------------------------------------
 RUN mkdir -p /opt/poseidon
 WORKDIR /opt/poseidon
 
+# Copy the pre-built conda environments from the builder stage
+COPY --from=builder /opt/conda/envs /opt/conda/envs
 
-# ------------------------------------------------------------
-# *** IMPORTANT: Install conda environments BEFORE copying project ***
-# This allows Docker to cache the expensive conda solve layers.
-# ------------------------------------------------------------
-# Install Mamba into the base environment for fast, low-memory solves
-RUN conda install -n base -c conda-forge mamba -y && conda clean -afy
-
-# Gym environment
-COPY poseidon_deploy/segmentation/segmentation_gym/install/gym.yml /tmp/gym.yml
-RUN mamba env create -n gym -f /tmp/gym.yml && conda clean -afy
-
-# Poseidon environment
-COPY poseidon_deploy/poseidon-env.yml /tmp/poseidon-env.yml
-RUN mamba env create -n poseidon -f /tmp/poseidon-env.yml && conda clean -afy
-
-
-
-# make it so the c++ programs can find the libraries
+# Set up environment variables
 ENV LD_LIBRARY_PATH=/opt/conda/envs/poseidon/lib:$LD_LIBRARY_PATH
+ENV PATH="/opt/conda/bin:/opt/conda/envs/poseidon/bin:${PATH}"
 
-# ------------------------------------------------------------
-# Ensure conda.sh is available for activation in scripts
-# ------------------------------------------------------------
-ENV PATH="/opt/miniconda3/bin:${PATH}"
-
-# ------------------------------------------------------------
-# Copy entire poseidon directory into the container
-# (This comes AFTER conda env creation for caching)
-# ------------------------------------------------------------
+# Copy application source code into the container
 COPY . /opt/poseidon/
 
-# Fix permissions so appuser can write inside /opt/poseidon
-RUN chown -R appuser:appuser /opt
+# Fix permissions for appuser
+RUN chown -R appuser:appuser /opt && \
+    find /opt/poseidon -type f -name "*.sh" -exec chmod +x {} \;
 
-# ------------------------------------------------------------
-# Make sure all shell scripts are executable
-# ------------------------------------------------------------
-RUN find /opt/poseidon -type f -name "*.sh" -exec chmod +x {} \;
-
-# ------------------------------------------------------------
-# Switch to non-root user (required for OpenShift)
-# ------------------------------------------------------------
+# Switch to non-root user
 USER appuser
 
-# ------------------------------------------------------------
-# Entrypoint: your master script
-# ------------------------------------------------------------
+# Entrypoint
 ENTRYPOINT ["/opt/poseidon/poseidon_deploy/wsl_submission_scripts/process_all.sh"]
