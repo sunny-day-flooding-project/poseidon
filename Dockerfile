@@ -10,6 +10,7 @@ COPY poseidon_deploy/segmentation/segmentation_gym/install/gym.yml /tmp/gym.yml
 COPY poseidon_deploy/poseidon-env.yml /tmp/poseidon-env.yml
 
 # Build both conda environments with leaner solver and clean up temporary caches
+RUN conda config --set channel_priority strict
 RUN conda install -n base conda-libmamba-solver -y && \
     conda config --set solver libmamba && \
     conda env create -n gym -f /tmp/gym.yml && \
