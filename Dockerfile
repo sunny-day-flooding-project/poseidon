@@ -9,11 +9,12 @@ FROM continuumio/miniconda3:latest AS builder
 COPY poseidon_deploy/segmentation/segmentation_gym/install/gym.yml /tmp/gym.yml
 COPY poseidon_deploy/poseidon-env.yml /tmp/poseidon-env.yml
 
-# Build both conda environments and clean up temporary caches
-RUN conda env create -n gym -f /tmp/gym.yml && \
+# Build both conda environments with leaner solver and clean up temporary caches
+RUN conda install -n base conda-libmamba-solver -y && \
+    conda config --set solver libmamba && \
+    conda env create -n gym -f /tmp/gym.yml && \
     conda env create -n poseidon -f /tmp/poseidon-env.yml && \
     conda clean -afy
-
 
 # ============================================================
 # STAGE 2: Final Runtime Image
