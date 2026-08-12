@@ -49,8 +49,12 @@ RUN ln -s /usr/bin/micromamba /usr/local/bin/conda || true
 # Copy application code
 COPY --chown=mambauser:0 . /opt/poseidon/
 
-# Make shell scripts executable
-RUN find /opt/poseidon -type f -name "*.sh" -exec chmod +x {} \;
+# 1. Make shell scripts AND compiled binaries executable
+# 2. Set group execution & read/write permissions (775/664) across /opt/poseidon
+#    so OpenShift's dynamic random UID (in group 0) can read and execute files.
+RUN find /opt/poseidon -type f -name "*.sh" -exec chmod +x {} \; && \
+    chmod +x /opt/poseidon/poseidon_utils/bin/* && \
+    chmod -R g+rwX /opt/poseidon
 
 # Runtime environment
 ENV HOME=/opt
@@ -63,7 +67,6 @@ USER mambauser
 WORKDIR /opt/poseidon
 
 ENTRYPOINT ["/opt/poseidon/poseidon_deploy/wsl_submission_scripts/process_all.sh"]
-
 
 
 
