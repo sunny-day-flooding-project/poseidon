@@ -6,14 +6,22 @@ echo "------------------------------------------------"
 echo "Job Started: $(date)"
 echo "------------------------------------------------"
 
-if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
-    source "$HOME/miniconda3/etc/profile.d/conda.sh"
+# Check if running in Docker/Container where environment is pre-activated in PATH
+if [ -n "$IS_DOCKER" ] || [[ "$PATH" == *"/opt/conda/envs/poseidon/bin"* ]]; then
+    echo "Container environment detected; skipping Conda/Micromamba activation."
+    conda() { return 0; }
 elif [ -f "/opt/conda/etc/profile.d/conda.sh" ]; then
     source "/opt/conda/etc/profile.d/conda.sh"
+elif [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+    source "$HOME/miniconda3/etc/profile.d/conda.sh"
+elif command -v micromamba >/dev/null 2>&1; then
+    eval "$(micromamba shell hook --shell bash)"
+    conda() { micromamba "$@"; }
 else
-    echo "conda.sh not found"
+    echo "Neither conda.sh nor micromamba was found"
     exit 1
 fi
+
 
 # Use $HOME/poseidon by default, but allow overrides from the environment.
 REPO_ROOT=$HOME/poseidon

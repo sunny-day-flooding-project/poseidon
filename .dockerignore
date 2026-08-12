@@ -1,7 +1,29 @@
-*.pyc
-__pycache__/
-.env
-.git/
+# Ignore git and local IDE settings
+.git
 .gitignore
-*.log
-*.tmp
+.vscode
+.idea
+
+# Ignore Python caches & virtual environments
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+env/
+venv/
+
+# Ignore local datasets, test outputs, and large geospatial data
+*.nc
+*.tif
+*.tiff
+*.gpkg
+*.sqlite
+*.db
+*.csv
+
+# Ignore local build artifacts and caches
+build/
+dist/
+*.so
+.cache/

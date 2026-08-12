@@ -1,0 +1,47 @@
+name: poseidon-combined
+channels:
+  - conda-forge
+  - defaults
+channel_priority: strict
+
+dependencies:
+  - python=3.11
+  # Core Scientific & Data
+  - numpy>=1.25,<2.0
+  - scipy
+  - pandas
+  - geopandas
+  - scikit-image
+  - joblib
+  - tqdm
+  - natsort
+  - pytz
+  - python-dotenv
+  - pydantic=2.13.*
+  - sqlalchemy=2.0.*
+  - psycopg2
+  # Geospatial
+  - gdal
+  - rasterio
+  - rioxarray
+  - pdal
+  - laspy
+  - zarr
+  - dask
+  - contextily
+  - mpi4py
+  # Visualization & Utilities
+  - matplotlib
+  - cmocean
+  - svgpath2mpl
+  - opencv=5.*
+  # Base Pip Setup
+  - pip
+  - pip:
+      - typing-extensions>=4.10.0
+      - google-api-python-client
+      - oauth2client==4.1.3
+      - doodleverse_utils
+      - transformers==4.37.*
+#      - tensorflow-cpu==2.12.*
+      - tensorflow-cpu==2.15.*
