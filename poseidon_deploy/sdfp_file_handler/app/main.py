@@ -132,17 +132,30 @@ def print_drive_listing(drive, page_size=10):
         size_label = "<dir>" if is_folder else f"{size}" if size is not None else "-"
         logger.info("%s  %s%s", size_label, name, trailing)
 
-
+# def get_pending_photos(db, limit=10):
+#     """Return the first pending photo_info rows ordered by DateTimeOriginalUTC."""
+#     return (
+#         db.query(models.photo_info_model)
+#         .filter(models.photo_info_model.poseidonDone == False)
+#         .order_by(models.photo_info_model.DateTimeOriginalUTC)
+#         .limit(limit)
+#         .all()
+#     )
+ 
 def get_pending_photos(db, limit=10):
-    """Return the first pending photo_info rows ordered by DateTimeOriginalUTC."""
     return (
         db.query(models.photo_info_model)
+        .join(
+            models.camera_locations_model,
+            models.photo_info_model.camera_ID
+            == models.camera_locations_model.camera_ID
+        )
         .filter(models.photo_info_model.poseidonDone == False)
+        .filter(models.camera_locations_model.doPoseidon == True)
         .order_by(models.photo_info_model.DateTimeOriginalUTC)
         .limit(limit)
         .all()
     )
-
 
 def get_photo_date_str(photo):
     if photo.DateTimeOriginalUTC is None:
